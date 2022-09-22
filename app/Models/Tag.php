@@ -18,4 +18,9 @@ class Tag extends Model
         'name',
         'ad',
     ];
+
+    public function ads()
+    {
+        return $this->hasMany(Ad::class, 'id', 'ad');
+    }
 }

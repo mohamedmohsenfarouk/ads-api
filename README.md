@@ -5,6 +5,5 @@
 -   Clone project.
 -   Run this commands in terminal
     -   composer update.
-    -   php artisan migrate.
     -   php artisan migrate --seed
     -   php artisan serve.

@@ -13,7 +13,7 @@ class StoreAdRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -29,7 +29,7 @@ class StoreAdRequest extends FormRequest
             'description' => ['required', 'max:70'],
             'category' => ['required'],
             'advertiser' => ['required'],
-            'start_date' => ['required'],
+            'start_date' => '',
         ];
     }
 }
