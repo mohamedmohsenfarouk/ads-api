@@ -2,8 +2,17 @@
 
 ## Installation Steps
 
--   Clone project.
+-   Clone project
 -   Run this commands in terminal
-    -   composer update.
+    -   composer update
     -   php artisan migrate --seed
-    -   php artisan serve.
+    -   php artisan serve
+
+- Here's the documentation for the Postman collection to test API Requests:
+  - [ Postman Documentation ](https://documenter.getpostman.com/view/18993500/2s83KXchcF).
+
+- Run this command to send mail
+    - php artisan schedule:run
+
+- Run this command for unit testing
+    - php artisan test

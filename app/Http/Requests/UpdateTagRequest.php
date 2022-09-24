@@ -25,7 +25,6 @@ class UpdateTagRequest extends FormRequest
     {
         return [
             'name' => '',
-            'ad' => '',
         ];
     }
 }

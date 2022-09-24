@@ -25,7 +25,6 @@ class StoreTagRequest extends FormRequest
     {
         return [
             'name' => ['required'],
-            'ad' => ['required'],
         ];
     }
 }

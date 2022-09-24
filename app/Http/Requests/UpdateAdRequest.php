@@ -30,6 +30,7 @@ class UpdateAdRequest extends FormRequest
             'category' => '',
             'advertiser' => '',
             'start_date' => '',
+            'tags' => '',
         ];
     }
 }

@@ -30,11 +30,37 @@ class Ad extends Model
 
     public function tags()
     {
-        return $this->belongsTo(Tag::class);
+        return $this->belongsToMany(Tag::class, 'tags_ads');
     }
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'id', 'category');
+        return $this->belongsTo(Category::class, 'category');
+    }
+
+    public function getCategoryName($id)
+    {
+        return Category::whereId($id)->first()->name;
+    }
+
+    public function getAdvertiserName($id)
+    {
+        return Advertiser::whereId($id)->first()->name;
+    }
+
+    public function getAdvertiserEmail($id)
+    {
+        return Advertiser::whereId($id)->first()->email;
+    }
+
+    public function getTag($id)
+    {
+        $ads_tags = Ad::with('tags')->whereId($id)->first();
+        $tags = $ads_tags->tags;
+        $all_tags = [];
+        foreach ($tags as $tag) {
+            array_push($all_tags, $tag->name);
+        }
+        return $all_tags;
     }
 }

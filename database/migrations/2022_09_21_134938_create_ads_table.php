@@ -20,7 +20,7 @@ class CreateAdsTable extends Migration
             $table->string('description');
             $table->foreignId('category')->constrained('categories')->onDelete('cascade');
             $table->foreignId('advertiser')->constrained('advertisers')->onDelete('cascade');
-            $table->timestamp('start_date')->nullable();
+            $table->date('start_date')->nullable();
             $table->timestamps();
         });
     }

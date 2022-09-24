@@ -6,8 +6,9 @@ use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
 use App\Http\Resources\TagResource;
 use App\Models\Tag;
+use App\Http\Controllers\MainController as MainController;
 
-class TagController extends Controller
+class TagController extends MainController
 {
     /**
      * Display a listing of the resource.
@@ -16,8 +17,12 @@ class TagController extends Controller
      */
     public function index()
     {
-        $tags = Tag::all();
-        return TagResource::collection($tags);
+        try {
+            $tags = Tag::all();
+            return $this->sendResponse(TagResource::collection($tags), 'Get all tags');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -28,8 +33,12 @@ class TagController extends Controller
      */
     public function store(StoreTagRequest $request)
     {
-        $tags = Tag::create($request->all());
-        return new TagResource($tags);
+        try {
+            $tags = Tag::create($request->all());
+            return $this->sendResponse(new TagResource($tags), 'Create new tag');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -41,8 +50,12 @@ class TagController extends Controller
      */
     public function update(UpdateTagRequest $request, Tag $tag)
     {
-        $tag->update($request->all());
-        return new TagResource($tag);
+        try {
+            $tag->update($request->all());
+            return $this->sendResponse(new TagResource($tag), 'Update tag');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -55,15 +68,9 @@ class TagController extends Controller
     {
         try {
             $tag->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Tag Deleted Successfully'
-            ]);
+            return $this->sendResponse([], 'Tag deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => false,
-                'errors' => $e->getMessage()
-            ]);
+            return $this->sendError('error Exception:', $e->getMessage());
         }
     }
 }

@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAdRequest;
-use App\Http\Requests\UpdateAdRequest;
 use App\Http\Resources\AdResource;
 use App\Models\Ad;
 use App\Models\Advertiser;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use App\Http\Controllers\MainController as MainController;
+use Illuminate\Support\Facades\DB;
 
-class AdController extends Controller
+class AdController extends MainController
 {
     /**
      * Display a listing of the resource.
@@ -19,8 +20,17 @@ class AdController extends Controller
      */
     public function index()
     {
-        $ads = Ad::all();
-        return AdResource::collection($ads);
+        try {
+            $ads = Ad::with('advertiser')->with('tags')->with('category')->get();
+            $result = [];
+            foreach ($ads as $ad) {
+                $data = $this->retriveData($ad);
+                array_push($result, $data);
+            }
+            return $this->sendResponse(AdResource::collection($result), 'Get all ads');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -31,42 +41,48 @@ class AdController extends Controller
      */
     public function store(StoreAdRequest $request)
     {
-        $ads = Ad::create($request->all());
-        return new AdResource($ads);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateAdRequest  $request
-     * @param  \App\Models\Ad  $ad
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateAdRequest $request, Ad $ad)
-    {
-        $ad->update($request->all());
-        return new AdResource($ad);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Ad  $ad
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Ad $ad)
-    {
         try {
-            $ad->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Ad Deleted Successfully',
-            ]);
+            $ads = Ad::create($request->all());
+            $tags = json_decode($request->input('tags'));
+            if (is_array($tags)) {
+                foreach ($tags as $tag) {
+                    $data = [
+                        'tags_id' => $tag,
+                        'ads_id' => $ads['id']
+                    ];
+                    DB::table('tags_ads')->insert($data);
+                }
+            } else {
+                $data = [
+                    'tag_id' => $tags,
+                    'ad_id' => $ads['id']
+                ];
+                DB::table('tags_ads')->insert($data);
+            }
+
+            $ads = Ad::with('advertiser')->with('tags')->with('category')
+                ->whereId($ads['id'])->first();
+            $all_tags = [];
+            $cat_name = $ads->getCategoryName($ads->category);
+            $advertiser_data = $ads->getAdvertiserName($ads->advertiser);
+            foreach ($ads->tags as $tag) {
+                array_push($all_tags, $tag->name);
+            }
+
+            $data = [
+                'id' => $ads->id,
+                'title' => $ads->title,
+                'description' => $ads->description,
+                'start_date' => $ads->start_date,
+                'type' => $ads->type,
+                'advertiser' => $advertiser_data,
+                'category' => $cat_name,
+                'tags' => $all_tags,
+            ];
+
+            return $this->sendResponse(new AdResource($data), 'Create new ad');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => false,
-                'errors' => $e->getMessage(),
-            ]);
+            return $this->sendError('error Exception:', $e->getMessage());
         }
     }
 
@@ -78,9 +94,18 @@ class AdController extends Controller
      */
     public function show_by_advertiser(Request $request)
     {
-        $advertiser_id = Advertiser::where('email', $request->email)->first()->id;
-        $ads = Ad::where('advertiser', $advertiser_id)->get();
-        return AdResource::collection($ads);
+        try {
+            $advertiser_id = Advertiser::where('email', $request->email)->first()->id;
+            $ads = Ad::with('tags')->with('category')->where('advertiser', $advertiser_id)->get();
+            $result = [];
+            foreach ($ads as $ad) {
+                $data = $this->retriveData($ad);
+                array_push($result, $data);
+            }
+            return $this->sendResponse(AdResource::collection($result), 'Get ads by advertiser');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -91,8 +116,17 @@ class AdController extends Controller
      */
     public function filter_by_category(Request $request)
     {
-        $ads = Ad::where('category', $request->category)->get();
-        return AdResource::collection($ads);
+        try {
+            $ads = Ad::with('tags')->with('advertiser')->with('category')->where('category', $request->category)->get();
+            $result = [];
+            foreach ($ads as $ad) {
+                $data = $this->retriveData($ad);
+                array_push($result, $data);
+            }
+            return $this->sendResponse(AdResource::collection($result), 'Get ads by category');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -103,8 +137,16 @@ class AdController extends Controller
      */
     public function filter_by_tag(Request $request)
     {
-        $tags = Tag::with('ads')->where('id', $request->tag)->first();
-        return AdResource::collection($tags->ads);
+        try {
+            $tag = Tag::with('ads')->whereId($request->tag)->first();
+            $result = [];
+            foreach ($tag->ads as $ad) {
+                $data = $this->retriveData($ad);
+                array_push($result, $data);
+            }
+            return $this->sendResponse(AdResource::collection($result), 'Get ads by tag');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
-    
 }

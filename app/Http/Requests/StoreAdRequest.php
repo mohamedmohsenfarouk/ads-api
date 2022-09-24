@@ -30,6 +30,7 @@ class StoreAdRequest extends FormRequest
             'category' => ['required'],
             'advertiser' => ['required'],
             'start_date' => '',
+            'tags' => ['required'],
         ];
     }
 }

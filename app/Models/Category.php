@@ -18,4 +18,9 @@ class Category extends Model
         'name',
         'description',
     ];
+
+    public function ad()
+    {
+        return $this->hasMany(Ad::class);
+    }
 }

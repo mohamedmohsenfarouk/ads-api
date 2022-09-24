@@ -16,11 +16,10 @@ class Tag extends Model
      */
     protected $fillable = [
         'name',
-        'ad',
     ];
 
     public function ads()
     {
-        return $this->hasMany(Ad::class, 'id', 'ad');
+        return $this->belongsToMany(Ad::class, 'tags_ads');
     }
 }

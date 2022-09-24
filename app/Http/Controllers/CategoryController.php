@@ -6,8 +6,9 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
+use App\Http\Controllers\MainController as MainController;
 
-class CategoryController extends Controller
+class CategoryController extends MainController
 {
     /**
      * Display a listing of the resource.
@@ -16,8 +17,12 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::all();
-        return CategoryResource::collection($categories);
+        try {
+            $categories = Category::all();
+            return $this->sendResponse(CategoryResource::collection($categories), 'Get all categories');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -28,8 +33,12 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request)
     {
-        $categories = Category::create($request->all());
-        return new CategoryResource($categories);
+        try {
+            $categories = Category::create($request->all());
+            return $this->sendResponse(new CategoryResource($categories), 'Create new category');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -41,8 +50,12 @@ class CategoryController extends Controller
      */
     public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $category->update($request->all());
-        return new CategoryResource($category);
+        try {
+            $category->update($request->all());
+            return $this->sendResponse(new CategoryResource($category), 'Update category');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -55,15 +68,9 @@ class CategoryController extends Controller
     {
         try {
             $category->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Category Deleted Successfully',
-            ]);
+            return $this->sendResponse([], 'Category deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => false,
-                'errors' => $e->getMessage(),
-            ]);
+            return $this->sendError('error Exception:', $e->getMessage());
         }
     }
 }
